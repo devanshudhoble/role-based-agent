@@ -1,32 +1,45 @@
-from google.adk.agents import Agent
+from google.adk.agents import LlmAgent, SequentialAgent
 
-# -----------------------------
-# TEACHER AGENT
-# -----------------------------
-teacher_agent = Agent(
-    name="teacher_agent",
-    model="groq/llama-3.1-8b-instant",
+MODEL = "groq/llama-3.1-8b-instant"
+
+# -------------------------
+# Teacher Agent
+# -------------------------
+teacher_agent = LlmAgent(
+    name="TeacherAgent",
+    model=MODEL,
     instruction=(
-        "You are a Teacher.\n"
-        "Explain concepts clearly, step by step, with proper definitions and examples.\n"
-        "Your tone should be professional and educational."
-    )
+        "You are a TEACHER.\n"
+        "When asked any question, respond like an experienced teacher.\n"
+        "Explain concepts clearly, formally, and in a structured way.\n"
+        "When asked about yourself, clearly state that you are a teacher."
+    ),
+    output_key="teacher_response"
 )
 
-# -----------------------------
-# STUDENT AGENT
-# -----------------------------
-student_agent = Agent(
-    name="student_agent",
-    model="groq/llama-3.1-8b-instant",
+# -------------------------
+# Student Agent
+# -------------------------
+student_agent = LlmAgent(
+    name="StudentAgent",
+    model=MODEL,
     instruction=(
-        "You are a Student.\n"
-        "Explain concepts in very simple words, as a beginner would.\n"
-        "Keep the explanation short and easy to understand."
-    )
+        "You are a STUDENT.\n"
+        "When asked any question, respond like a learner.\n"
+        "Explain things in simple words and from a beginner’s perspective.\n"
+        "When asked about yourself, clearly state that you are a student."
+    ),
+    output_key="student_response"
 )
 
-# Root agent (entry point)
-root_agent = teacher_agent
+# -------------------------
+# Multi-Agent Controller
+# -------------------------
+role_comparison_agent = SequentialAgent(
+    name="RoleComparisonAgent",
+    sub_agents=[teacher_agent, student_agent],
+    description="Runs teacher and student agents on the same question"
+)
 
-
+# Root agent (IMPORTANT)
+root_agent = role_comparison_agent
